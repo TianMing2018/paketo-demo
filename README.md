@@ -54,6 +54,35 @@ root@44b9838a71d3:/workspace# ls /layers/paketo-buildpacks_health-checker/thc
 bin  env.launch
 ```
 
+#### pack build mode
+
+it seems that there is no problem when re-build image by `pack build`, here is the pack command used for testing.and log file is health4.log and health5.log
+
+```shell
+
+sudo pack build packdemo \
+  --builder paketobuildpacks/builder:base \
+  --buildpack paketo-buildpacks/java \
+  --buildpack docker://gcr.io/paketo-buildpacks/health-checker \
+  --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
+  --env BP_HEALTH_CHECKER_ENABLED=true \
+  --env BP_LOG_LEVEL=DEBUG \
+  --path paketo-demo > health4.log
+
+ubuntu@DESKTOP-T0EV4J4:~/test$ docker run -dti -p 8180:8180 --name paketo-demo packdemo
+280265672f88d0419c80146f1bfde2ae98a52d485f4cdbbfa4391b1ffcef99c4
+ubuntu@DESKTOP-T0EV4J4:~/test$ curl localhost:8180/demo
+你好
+ubuntu@DESKTOP-T0EV4J4:~/test$ docker exec -it paketo-demo bash
+cnb@280265672f88:/workspace$ ls /layers/paketo-buildpacks_health-checker/thc
+bin
+cnb@280265672f88:/workspace$ ls /layers/paketo-buildpacks_health-checker/thc/bin
+thc
+```
+
+> re-run command after change log file name to health5.log
+
+
 #### maybe another problem
 
 it seems that defaut setting for health-checker not works as wish too
