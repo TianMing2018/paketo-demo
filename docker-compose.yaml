@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  demo:
+    image: "paketo-demo:0.0.1-SNAPSHOT"
+    container_name: paketo-demo
+    ports:
+      - "8180:8180"
+    healthcheck:
+      #test: curl --silent --fail --request GET http://localhost:8180/actuator/health | jq --exit-status -n 'inputs | if has("status") then .status=="UP" else false end' > /dev/null || exit 1
+      test: THC_PORT=8180 THC_PATH=/actuator/health/ /layers/paketo-buildpacks_health-checker/thc/bin/thc 
+      interval: 10s
+      timeout: 2s
+      retries: 5

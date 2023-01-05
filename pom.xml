@@ -9,14 +9,95 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>demo</artifactId>
+	<artifactId>paketo-demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>demo</name>
+	<name>paketo-demo</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<java.version>11</java.version>
+	<maven.test.skip>true</maven.test.skip>
+	<app.author>tianming2019</app.author>
 	</properties>
+    <profiles>
+        <profile>
+            <id>paketo</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-image</id>
+                                <goals>
+                                    <goal>build-image</goal>
+                                </goals>
+                                <configuration>
+                                    <docker>
+                                        <!-- <host>tcp://192.168.10.116:2375</host> -->
+                                    </docker>
+                                    <image>
+			    		               <!-- build by Dockerfile in root dir -->
+					                   <runImage>docker.myserver.com:5000/tianming2019/run:cn</runImage>
+                                        <bindings>
+					                       <!-- just jdk or someelse tar file to avoid download each time -->
+                                            <binding>proxy-volume:/platform/bindings/dependency-mapping:ro</binding>
+                                        </bindings>
+                                        <!--<verboseLogging>true</verboseLogging> -->
+                                        <buildpacks>
+                                            <buildpack>paketo-buildpacks/java</buildpack>
+                                            <buildpack>docker://gcr.io/paketo-buildpacks/health-checker</buildpack>
+                                        </buildpacks>
+                                        <pullPolicy>IF_NOT_PRESENT</pullPolicy>
+					                   <!-- it seems that health-checker have a bugs about reuse cache when rebuild -->
+                                        <cleanCache>true</cleanCache>
+                                        <buildCache>
+                                            <volume>
+                                                <name>cache-${project.artifactId}.build</name>
+                                            </volume>
+                                        </buildCache>
+                                        <launchCache>
+                                            <volume>
+                                                <name>cache-${project.artifactId}.launch</name>
+                                            </volume>
+                                        </launchCache>
+                                        <env>
+                                            <BP_LOG_LEVEL>DEBUG</BP_LOG_LEVEL>
+                                            <BP_JVM_TYPE>JDK</BP_JVM_TYPE>
+                                            <BP_JVM_VERSION>${java.version}</BP_JVM_VERSION>
+                                            <BP_HEALTH_CHECKER_ENABLED>true</BP_HEALTH_CHECKER_ENABLED>
+                                            <THC_PORT>8180</THC_PORT>
+                                            <THC_PATH>/actuator/health</THC_PATH>
+                                            <BPE_LANG>zh_CN.UTF-8</BPE_LANG>
+                                            <BPE_LC_ALL>zh_CN.UTF-8</BPE_LC_ALL>
+                                            <LANG>zh_CN.UTF-8</LANG>
+                                            <LC_ALL>zh_CN.UTF-8</LC_ALL>
+                                        </env>
+                                    </image>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build-info</id>
+                                <goals>
+                                    <goal>build-info</goal>
+                                </goals>
+                                <configuration>
+                                    <additionalProperties>
+                                        <encoding.source>${project.build.sourceEncoding}</encoding.source>
+                                        <encoding.reporting>${project.reporting.outputEncoding}</encoding.reporting>
+                                        <java.source>${maven.compiler.source}</java.source>
+                                        <java.target>${maven.compiler.target}</java.target>
+                                        <author>${app.author}</author>
+                                    </additionalProperties>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -39,13 +120,21 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
