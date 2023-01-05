@@ -56,7 +56,7 @@ bin  env.launch
 
 #### pack build mode
 
-it seems that there is no problem when re-build image by `pack build`, here is the pack command used for testing.and log file is health4.log and health5.log
+it seems that there is no problem when re-build image by `pack build`, here is the pack command used for testing(not exactly same to 'spring-boot way'),and log file is health4.log and health5.log
 
 ```shell
 
