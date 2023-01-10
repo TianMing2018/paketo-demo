@@ -3,6 +3,12 @@
 
 a sample repo about how to use paketo build spring-boot app image,add some customized item for chinese language
 
+## additional
+
+### dive
+
+dive is a tool for exploring each layer in a docker image, <https://github.com/wagoodman/dive/releases/> https://github.com/wagoodman/dive/releases/download/v0.10.0/dive_0.10.0_linux_amd64.deb
+
 ## issues
 
 
@@ -15,72 +21,337 @@ here is some issue in practice
 
 ### 24 for health-cheker
 
-loss thc client when rebuild docker image
+It should could use caches to load thc client when re-build image
 
-#### setp for issue
+> and the default value should worked when `THC_PORT` or `THC_PATH` not specified
 
-1. modify pom.xml
+#### setp and logs
 
-```xml
-<!-- comment this line -->
-<!-- <cleanCache>true</cleanCache> -->
-```
-
-2. run build image  twice
+All the test running in one machine and docker running all the time without restart(docker installed on my windows host),here is the maven information in ubuntu and windows
 
 ```shell
-mvn clean install -P paketo -l health1.log
-mvn clean install -P paketo -l health2.log
+
+PS D:\code\myconfig\docker\portainer> mvn -v
+Apache Maven 3.8.6 (84538c9988a25aec085021c365c560670ad80f63)
+Maven home: C:\Software\apache-maven-3.8.6
+Java version: 11.0.16.1, vendor: BellSoft, runtime: C:\Software\Java\jdk-11.0.16.1
+Default locale: zh_CN, platform encoding: GBK
+OS name: "windows 11", version: "10.0", arch: "amd64", family: "windows"
+
+
+Welcome to Ubuntu 22.04.1 LTS (GNU/Linux 5.15.79.1-microsoft-standard-WSL2 x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+This message is shown once a day. To disable it please create the /home/ubuntu/.hushlogin file.
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ mvn -v
+Apache Maven 3.8.6 (84538c9988a25aec085021c365c560670ad80f63)
+Maven home: /mnt/c/Software/apache-maven-3.8.6
+Java version: 11.0.17, vendor: Ubuntu, runtime: /usr/lib/jvm/java-11-openjdk-amd64
+Default locale: en, platform encoding: UTF-8
+OS name: "linux", version: "5.15.79.1-microsoft-standard-wsl2", arch: "amd64", family: "unix"
+
 ```
 
-3. inspect container
-```
-docker run -dti -p 8180:8180 --name paketo-demo paketo-demo:0.0.1-SNAPSHOT
-docker exec -it paketo-demo bash
-root@abb52b61115c:/workspace# ls /layers/paketo-buildpacks_health-checker/thc
-env.launch
-```
-> we can seen that loss bin directory which contains thc
 
-4. elude porblem
+##### sprig-boot-maven mode
 
-revert step 1
+we can see that only the first time will write thc client successfully. releated log files prefix with **sb-health**
 
+
+- build 1
+  ```shell
+  mvn clean install -P paketo -X -l sb-health1.log
+  docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     proxy-volume
+  dive paketo-demo:0.0.1-SNAPSHOT
+  Filetree
+  └── layers
+      └── paketo-buildpacks_health-checker
+          └── thc
+              ├── bin
+              │   └── thc
+              └── env.launch
+                  └── health-check
+                      ├── THC_PATH.default
+                      └── THC_PORT.default
+  ```
+- build 2
+  ```shell
+  mvn clean install -P paketo -X -l sb-health2.log
+  docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     proxy-volume
+  dive paketo-demo:0.0.1-SNAPSHOT
+  Filetree
+  └── layers
+      └── paketo-buildpacks_health-checker
+          └── thc
+              └── env.launch
+                  └── health-check
+                      ├── THC_PATH.default
+                      └── THC_PORT.default
+  ```
+- build 3
+  ```shell
+  mvn clean install -P paketo -X -l sb-health3.log
+  docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     proxy-volume
+  dive paketo-demo:0.0.1-SNAPSHOT
+  Filetree
+  └── layers
+      └── paketo-buildpacks_health-checker
+          └── thc
+              └── env.launch
+                  └── health-check
+                      ├── THC_PATH.default
+                      └── THC_PORT.default
+  ```
+- build 4
+  ```shell
+  mvn clean install -P paketo -X -l sb-health4.log
+  docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     proxy-volume
+  dive paketo-demo:0.0.1-SNAPSHOT
+  Filetree
+  └── layers
+      └── paketo-buildpacks_health-checker
+          └── thc
+              └── env.launch
+                  └── health-check
+                      ├── THC_PATH.default
+                      └── THC_PORT.default
+  ```
+
+after the test,I inspect the volume and repeat test again and I found that maybe the volume recreated everytime?
 ```shell
-mvn clean install -P paketo -l health3.log
-docker run -dti -p 8180:8180 --name paketo-demo paketo-demo:0.0.1-SNAPSHOT
-docker exec -it paketo-demo bash
-root@44b9838a71d3:/workspace# ls /layers/paketo-buildpacks_health-checker/thc
-bin  env.launch
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect cache-paketo-demo.build
+[
+    {
+        "CreatedAt": "2023-01-10T02:14:10Z",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/cache-paketo-demo.build/_data",
+        "Name": "cache-paketo-demo.build",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+mvn clean install -P paketo -X -l sb-health5.log
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect cache-paketo-demo.build
+[
+    {
+        "CreatedAt": "2023-01-10T02:41:19Z",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/cache-paketo-demo.build/_data",
+        "Name": "cache-paketo-demo.build",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+# list volume and dive image
+  docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     proxy-volume
+  dive paketo-demo:0.0.1-SNAPSHOT
+  Filetree
+  └── layers
+      └── paketo-buildpacks_health-checker
+          └── thc
+              └── env.launch
+                  └── health-check
+                      ├── THC_PATH.default
+                      └── THC_PORT.default
 ```
+
+
 
 #### pack build mode
 
-it seems that there is no problem when re-build image by `pack build`, here is the pack command used for testing(not exactly same to 'spring-boot way'),and log file is health4.log and health5.log
+I have adjust command like @scottfrederick's,releated log files prefix with **pack-health**
 
+- build 1
+  ```shell
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ sudo pack build pack-demo \
+    --builder paketobuildpacks/builder:base \
+    --buildpack paketo-buildpacks/java \
+    --buildpack docker://gcr.io/paketo-buildpacks/health-checker \
+    --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
+    --env BP_HEALTH_CHECKER_ENABLED=true \
+    --env BP_LOG_LEVEL=DEBUG \
+    --env BP_JVM_TYPE=JDK \
+    --verbose \
+    --env THC_PORT=8180 \
+    --env THC_PATH="/actuator/health" \
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health1.log
+
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+  local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.launch
+  local     proxy-volume
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ dive paketo-demo:0.0.1-SNAPSHOT
+    Filetree
+    └── layers
+        └── paketo-buildpacks_health-checker
+            └── thc
+                ├── bin
+                │   └── thc
+                └── env.launch
+                    └── health-check
+                        ├── THC_PATH.default
+                        └── THC_PORT.default
+  ```
+- build 2
+  ```shell
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ sudo pack build pack-demo \
+    --builder paketobuildpacks/builder:base \
+    --buildpack paketo-buildpacks/java \
+    --buildpack docker://gcr.io/paketo-buildpacks/health-checker \
+    --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
+    --env BP_HEALTH_CHECKER_ENABLED=true \
+    --env BP_LOG_LEVEL=DEBUG \
+    --env BP_JVM_TYPE=JDK \
+    --verbose \
+    --env THC_PORT=8180 \
+    --env THC_PATH="/actuator/health" \
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health2.log
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+  local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.launch
+  local     proxy-volume
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+  [
+      {
+          "CreatedAt": "2023-01-10T02:56:39Z",
+          "Driver": "local",
+          "Labels": null,
+          "Mountpoint": "/var/lib/docker/volumes/pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build/_data",
+          "Name": "pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build",
+          "Options": null,
+          "Scope": "local"
+      }
+  ]
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ dive paketo-demo:0.0.1-SNAPSHOT
+    Filetree
+    └── layers
+        └── paketo-buildpacks_health-checker
+            └── thc
+                └── env.launch
+                    └── health-check
+                        ├── THC_PATH.default
+                        └── THC_PORT.default
+  ```
+- build 3
+  ```shell
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ sudo pack build pack-demo \
+    --builder paketobuildpacks/builder:base \
+    --buildpack paketo-buildpacks/java \
+    --buildpack docker://gcr.io/paketo-buildpacks/health-checker \
+    --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
+    --env BP_HEALTH_CHECKER_ENABLED=true \
+    --env BP_LOG_LEVEL=DEBUG \
+    --env BP_JVM_TYPE=JDK \
+    --verbose \
+    --env THC_PORT=8180 \
+    --env THC_PATH="/actuator/health" \
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health3.log
+
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
+  DRIVER    VOLUME NAME
+  local     cache-paketo-demo.build
+  local     cache-paketo-demo.launch
+  local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+  local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.launch
+  local     proxy-volume
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+  [
+      {
+          "CreatedAt": "2023-01-10T03:01:21Z",
+          "Driver": "local",
+          "Labels": null,
+          "Mountpoint": "/var/lib/docker/volumes/pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build/_data",
+          "Name": "pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build",
+          "Options": null,
+          "Scope": "local"
+      }
+  ]
+  ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ dive paketo-demo:0.0.1-SNAPSHOT
+    Filetree
+    └── layers
+        └── paketo-buildpacks_health-checker
+            └── thc
+                └── env.launch
+                    └── health-check
+                        ├── THC_PATH.default
+                        └── THC_PORT.default
+  ```
+- build 4
 ```shell
-
-sudo pack build packdemo \
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ sudo pack build pack-demo \
   --builder paketobuildpacks/builder:base \
   --buildpack paketo-buildpacks/java \
   --buildpack docker://gcr.io/paketo-buildpacks/health-checker \
   --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
   --env BP_HEALTH_CHECKER_ENABLED=true \
   --env BP_LOG_LEVEL=DEBUG \
-  --path paketo-demo > health4.log
+  --env BP_JVM_TYPE=JDK \
+  --verbose \
+  --env THC_PORT=8180 \
+  --env THC_PATH="/actuator/health" \
+  --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health4.log
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
+DRIVER    VOLUME NAME
+local     cache-paketo-demo.build
+local     cache-paketo-demo.launch
+local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+local     pack-cache-library_pack-demo_latest-ad5cec6fc0ee.launch
+local     proxy-volume
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build
+[
+    {
+        "CreatedAt": "2023-01-10T03:04:59Z",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build/_data",
+        "Name": "pack-cache-library_pack-demo_latest-ad5cec6fc0ee.build",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ dive paketo-demo:0.0.1-SNAPSHOT
+    Filetree
+    └── layers
+        └── paketo-buildpacks_health-checker
+            └── thc
+                └── env.launch
+                    └── health-check
+                        ├── THC_PATH.default
+                        └── THC_PORT.default
+  ```
 
-ubuntu@DESKTOP-T0EV4J4:~/test$ docker run -dti -p 8180:8180 --name paketo-demo packdemo
-280265672f88d0419c80146f1bfde2ae98a52d485f4cdbbfa4391b1ffcef99c4
-ubuntu@DESKTOP-T0EV4J4:~/test$ curl localhost:8180/demo
-你好
-ubuntu@DESKTOP-T0EV4J4:~/test$ docker exec -it paketo-demo bash
-cnb@280265672f88:/workspace$ ls /layers/paketo-buildpacks_health-checker/thc
-bin
-cnb@280265672f88:/workspace$ ls /layers/paketo-buildpacks_health-checker/thc/bin
-thc
-```
-
-> re-run command after change log file name to health5.log
+> it seems that the build process will not using settings in pom such as `buildCache.volume.name`,and `pack` itself don't have this setting too.
 
 
 #### maybe another problem

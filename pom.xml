@@ -44,14 +44,14 @@
 					                       <!-- just jdk or someelse tar file to avoid download each time -->
                                             <binding>proxy-volume:/platform/bindings/dependency-mapping:ro</binding>
                                         </bindings>
-                                        <!--<verboseLogging>true</verboseLogging> -->
+                                        <verboseLogging>true</verboseLogging>
                                         <buildpacks>
                                             <buildpack>paketo-buildpacks/java</buildpack>
                                             <buildpack>docker://gcr.io/paketo-buildpacks/health-checker</buildpack>
                                         </buildpacks>
                                         <pullPolicy>IF_NOT_PRESENT</pullPolicy>
 					                   <!-- it seems that health-checker have a bugs about reuse cache when rebuild -->
-                                        <cleanCache>true</cleanCache>
+					<!-- <cleanCache>true</cleanCache> -->
                                         <buildCache>
                                             <volume>
                                                 <name>cache-${project.artifactId}.build</name>
