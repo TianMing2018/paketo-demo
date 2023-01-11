@@ -186,6 +186,21 @@ ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect cache-paketo-de
 
 I have adjust command like @scottfrederick's,releated log files prefix with **pack-health**
 
+
+sudo pack build pack-demo \
+    --builder paketobuildpacks/builder:base \
+    --buildpack paketo-buildpacks/java \
+    --buildpack dmikusa/paketo-buildpacks-health-checker \
+    --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
+    --env BP_HEALTH_CHECKER_ENABLED=true \
+    --env BP_LOG_LEVEL=DEBUG \
+    --env BP_JVM_TYPE=JDK \
+    --verbose \
+    --env THC_PORT=8180 \
+    --env THC_PATH="/actuator/health" \
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health6.log
+
+https://hub.docker.com/r/dmikusa/paketo-buildpacks-health-checker
 - build 1
   ```shell
   ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ sudo pack build pack-demo \
