@@ -39,7 +39,7 @@
                                     </docker>
                                     <image>
 			    		               <!-- build by Dockerfile in root dir -->
-					                   <runImage>docker.myserver.com:5000/tianming2019/run:cn</runImage>
+					                   <!-- <runImage>docker.myserver.com:5000/tianming2019/run:cn</runImage> -->
                                         <bindings>
 					                       <!-- just jdk or someelse tar file to avoid download each time -->
                                             <binding>proxy-volume:/platform/bindings/dependency-mapping:ro</binding>
@@ -47,7 +47,8 @@
                                         <verboseLogging>true</verboseLogging>
                                         <buildpacks>
                                             <buildpack>paketo-buildpacks/java</buildpack>
-                                            <buildpack>docker://gcr.io/paketo-buildpacks/health-checker</buildpack>
+                                            <!-- <buildpack>docker://gcr.io/paketo-buildpacks/health-checker</buildpack> -->
+                                            <buildpack>dmikusa/paketo-buildpacks-health-checker</buildpack>
                                         </buildpacks>
                                         <pullPolicy>IF_NOT_PRESENT</pullPolicy>
 					                   <!-- it seems that health-checker have a bugs about reuse cache when rebuild -->
