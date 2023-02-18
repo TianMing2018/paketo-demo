@@ -14,10 +14,45 @@ dive is a tool for exploring each layer in a docker image, <https://github.com/w
 
 here is some issue in practice
 
-|brief|link|chapter|
-|------|-------|---|
-| health-checker loss thc client| <https://github.com/paketo-buildpacks/health-checker/issues/24> | ### 24 ..|
-| support for chinese locale | <https://github.com/paketo-buildpacks/base-builder/issues/659> | ### 659..|
+|brief|link|chapter|fixed|
+|------|-------|---|-----|
+|build image un-idempotency| <https://github.com/paketo-buildpacks/java/issues/914> | ### 924 |no|
+| health-checker loss thc client| <https://github.com/paketo-buildpacks/health-checker/issues/24> | ### 24 ..|yes|
+| support for chinese locale | <https://github.com/paketo-buildpacks/base-builder/issues/659> | ### 659..|no|
+
+### 924 for build image
+
+recently,I found that build image almost failed eachtime, and some buildpack‘behavior
+ not so consistency(eg: they may 'toggle' passed or not when re-run build image)
+
+#### step and logs
+
+```shell
+# pack war
+mvn clean package
+# run three times and save log to nbg-pack*.log
+sudo pack build pack-demo \
+    --verbose \
+    --buildpack paketobuildpacks/java:8 \
+    --buildpack paketobuildpacks/health-checker:1 \
+    --builder paketobuildpacks/builder:base \
+    --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
+    --pull-policy IF_NOT_PRESENT \
+    --env BP_LOG_LEVEL=DEBUG \
+    --env BP_JVM_TYPE=JDK \
+    --env BP_JVM_VERSION=11 \
+    --env BP_HEALTH_CHECKER_ENABLED=true \
+    --env THC_PORT=8180 \
+    --env THC_PATH="/actuator/health" \
+    --env BPE_LANG=zh_CN.UTF-8 \
+    --env BPE_LC_ALL=zh_CN.UTF-8 \    
+    --env LANG=zh_CN.UTF-8 \
+    --env LC_ALL=zh_CN.UTF-8 \    
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > nbg-pack1.log
+# run three times and save log to nbg-sb*.log
+mvn install -P pakete -l nbg-sb1.log
+```
+
 
 ### 24 for health-cheker
 
