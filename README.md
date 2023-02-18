@@ -25,6 +25,8 @@ here is some issue in practice
 recently,I found that build image almost failed eachtime, and some buildpack‘behavior
  not so consistency(eg: they may 'toggle' passed or not when re-run build image)
 
+> It seems that the builder crushed when it try to bind volume to buildpack ,cause of there was multi-version of cached jdk and syft in the volume, here is the files list in my proxy-volume,when I remove lower(or discarded) version ,I can build image successfully everytime。I'm wondering what you will do to solve this issue ? add some description in docs guides / add validation in buildpack / or just do nothing ,please leave a comment.
+
 #### step and logs
 
 ```shell
@@ -37,7 +39,7 @@ sudo pack build pack-demo \
     --buildpack paketobuildpacks/health-checker:1 \
     --builder paketobuildpacks/builder:base \
     --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
-    --pull-policy IF_NOT_PRESENT \
+    --pull-policy if-not-present \
     --env BP_LOG_LEVEL=DEBUG \
     --env BP_JVM_TYPE=JDK \
     --env BP_JVM_VERSION=11 \
@@ -45,12 +47,12 @@ sudo pack build pack-demo \
     --env THC_PORT=8180 \
     --env THC_PATH="/actuator/health" \
     --env BPE_LANG=zh_CN.UTF-8 \
-    --env BPE_LC_ALL=zh_CN.UTF-8 \    
+    --env BPE_LC_ALL=zh_CN.UTF-8 \
     --env LANG=zh_CN.UTF-8 \
-    --env LC_ALL=zh_CN.UTF-8 \    
+    --env LC_ALL=zh_CN.UTF-8 \
     --path target/paketo-demo-0.0.1-SNAPSHOT.war > nbg-pack1.log
 # run three times and save log to nbg-sb*.log
-mvn install -P pakete -l nbg-sb1.log
+mvn install -P paketo -l nbg-sb1.log
 ```
 
 
@@ -94,6 +96,10 @@ OS name: "linux", version: "5.15.79.1-microsoft-standard-wsl2", arch: "amd64", f
 ##### sprig-boot-maven mode
 
 we can see that only the first time will write thc client successfully. releated log files prefix with **sb-health**
+
+https://github.com/dmikusa/tiny-health-checker/releases/download/v0.8.0/thc-x86_64-unknown-linux-musl
+echo 'file:///platform/bindings/dependency-mapping/thc-x86_64-unknown-linux-musl' > sha256:d3940b0f347744f9c0ebdc827f46014964a9de45b0d60b20116f6a60bb849a8a
+
 
 
 - build 1
@@ -223,17 +229,30 @@ I have adjust command like @scottfrederick's,releated log files prefix with **pa
 
 
 sudo pack build pack-demo \
+    --verbose \
+    --buildpack paketobuildpacks/java:8 \
+    --buildpack paketobuildpacks/health-checker:1 \
     --builder paketobuildpacks/builder:base \
-    --buildpack paketo-buildpacks/java \
-    --buildpack dmikusa/paketo-buildpacks-health-checker \
+    --run-image paketobuildpacks/run:base-cnb \
     --volume proxy-volume:/platform/bindings/dependency-mapping:ro \
-    --env BP_HEALTH_CHECKER_ENABLED=true \
+    --pull-policy if-not-present \
     --env BP_LOG_LEVEL=DEBUG \
     --env BP_JVM_TYPE=JDK \
-    --verbose \
+    --env BP_JVM_VERSION=11 \
+    --env BP_HEALTH_CHECKER_ENABLED=true \
     --env THC_PORT=8180 \
     --env THC_PATH="/actuator/health" \
-    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health6.log
+    --env BPE_LANG=zh_CN.UTF-8 \
+    --env BPE_LC_ALL=zh_CN.UTF-8 \
+    --env LANG=zh_CN.UTF-8 \
+    --env LC_ALL=zh_CN.UTF-8 \
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > nbg-pack.log
+
+
+
+
+
+
 
 https://hub.docker.com/r/dmikusa/paketo-buildpacks-health-checker
 - build 1
