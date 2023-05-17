@@ -32,7 +32,7 @@ recently,I found that build image almost failed eachtime, and some buildpack‘b
 ```shell
 # pack war
 mvn clean package
-# run three times and save log to nbg-pack*.log
+# run three times and save log to log/archive/nbg-pack*.log
 sudo pack build pack-demo \
     --verbose \
     --buildpack paketobuildpacks/java:8 \
@@ -50,9 +50,9 @@ sudo pack build pack-demo \
     --env BPE_LC_ALL=zh_CN.UTF-8 \
     --env LANG=zh_CN.UTF-8 \
     --env LC_ALL=zh_CN.UTF-8 \
-    --path target/paketo-demo-0.0.1-SNAPSHOT.war > nbg-pack1.log
-# run three times and save log to nbg-sb*.log
-mvn install -P paketo -l nbg-sb1.log
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > ./log/archive/nbg-pack1.log
+# run three times and save log to log/archive/nbg-sb*.log
+mvn install -P paketo -l ./log/archive/nbg-sb1.log
 ```
 
 
@@ -95,7 +95,7 @@ OS name: "linux", version: "5.15.79.1-microsoft-standard-wsl2", arch: "amd64", f
 
 ##### sprig-boot-maven mode
 
-we can see that only the first time will write thc client successfully. releated log files prefix with **sb-health**
+we can see that only the first time will write thc client successfully. releated log files prefix with **sb-health** under **./log/archive/** directory
 
 https://github.com/dmikusa/tiny-health-checker/releases/download/v0.8.0/thc-x86_64-unknown-linux-musl
 echo 'file:///platform/bindings/dependency-mapping/thc-x86_64-unknown-linux-musl' > sha256:d3940b0f347744f9c0ebdc827f46014964a9de45b0d60b20116f6a60bb849a8a
@@ -104,7 +104,7 @@ echo 'file:///platform/bindings/dependency-mapping/thc-x86_64-unknown-linux-musl
 
 - build 1
   ```shell
-  mvn clean install -P paketo -X -l sb-health1.log
+  mvn clean install -P paketo -X -l ./log/archive/sb-health1.log
   docker volume ls
   DRIVER    VOLUME NAME
   local     cache-paketo-demo.build
@@ -124,7 +124,7 @@ echo 'file:///platform/bindings/dependency-mapping/thc-x86_64-unknown-linux-musl
   ```
 - build 2
   ```shell
-  mvn clean install -P paketo -X -l sb-health2.log
+  mvn clean install -P paketo -X -l ./log/archive/sb-health2.log
   docker volume ls
   DRIVER    VOLUME NAME
   local     cache-paketo-demo.build
@@ -142,7 +142,7 @@ echo 'file:///platform/bindings/dependency-mapping/thc-x86_64-unknown-linux-musl
   ```
 - build 3
   ```shell
-  mvn clean install -P paketo -X -l sb-health3.log
+  mvn clean install -P paketo -X -l ./log/archive/sb-health3.log
   docker volume ls
   DRIVER    VOLUME NAME
   local     cache-paketo-demo.build
@@ -160,7 +160,7 @@ echo 'file:///platform/bindings/dependency-mapping/thc-x86_64-unknown-linux-musl
   ```
 - build 4
   ```shell
-  mvn clean install -P paketo -X -l sb-health4.log
+  mvn clean install -P paketo -X -l ./log/archive/sb-health4.log
   docker volume ls
   DRIVER    VOLUME NAME
   local     cache-paketo-demo.build
@@ -191,7 +191,7 @@ ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect cache-paketo-de
         "Scope": "local"
     }
 ]
-mvn clean install -P paketo -X -l sb-health5.log
+mvn clean install -P paketo -X -l ./log/archive/sb-health5.log
 ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect cache-paketo-demo.build
 [
     {
@@ -225,7 +225,7 @@ ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume inspect cache-paketo-de
 
 #### pack build mode
 
-I have adjust command like @scottfrederick's,releated log files prefix with **pack-health**
+I have adjust command like @scottfrederick's,releated log files prefix with **pack-health** under **./log/archive/** directory
 
 
 sudo pack build pack-demo \
@@ -246,7 +246,7 @@ sudo pack build pack-demo \
     --env BPE_LC_ALL=zh_CN.UTF-8 \
     --env LANG=zh_CN.UTF-8 \
     --env LC_ALL=zh_CN.UTF-8 \
-    --path target/paketo-demo-0.0.1-SNAPSHOT.war > nbg-pack.log
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > ./log/archive/nbg-pack.log
 
 
 
@@ -268,7 +268,7 @@ https://hub.docker.com/r/dmikusa/paketo-buildpacks-health-checker
     --verbose \
     --env THC_PORT=8180 \
     --env THC_PATH="/actuator/health" \
-    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health1.log
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > ./log/archive/pack-health1.log
 
   ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
   DRIVER    VOLUME NAME
@@ -302,7 +302,7 @@ https://hub.docker.com/r/dmikusa/paketo-buildpacks-health-checker
     --verbose \
     --env THC_PORT=8180 \
     --env THC_PATH="/actuator/health" \
-    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health2.log
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > ./log/archive/pack-health2.log
   ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
   DRIVER    VOLUME NAME
   local     cache-paketo-demo.build
@@ -345,7 +345,7 @@ https://hub.docker.com/r/dmikusa/paketo-buildpacks-health-checker
     --verbose \
     --env THC_PORT=8180 \
     --env THC_PATH="/actuator/health" \
-    --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health3.log
+    --path target/paketo-demo-0.0.1-SNAPSHOT.war > ./log/archive/pack-health3.log
 
   ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
   DRIVER    VOLUME NAME
@@ -389,7 +389,7 @@ ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ sudo pack build pack-demo \
   --verbose \
   --env THC_PORT=8180 \
   --env THC_PATH="/actuator/health" \
-  --path target/paketo-demo-0.0.1-SNAPSHOT.war > pack-health4.log
+  --path target/paketo-demo-0.0.1-SNAPSHOT.war > ./log/archive/pack-health4.log
 ubuntu@DESKTOP-T0EV4J4:~/test/paketo-demo$ docker volume ls
 DRIVER    VOLUME NAME
 local     cache-paketo-demo.build
@@ -460,10 +460,10 @@ docker build  -t docker.myserver.com:5000/tianming2019/run:cn .
 2. build image
 
 ```shell
-mvn clean install -P paketo -l build.log
+mvn clean install -P paketo -l ./log/archive/build.log
 ```
 
-> you can check build log  by **build.log**
+> you can check build log  by **./log/archive/build.log**
 
 3. run container
 
