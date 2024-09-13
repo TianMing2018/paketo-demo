@@ -1,0 +1,106 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< com.example:paketo-demo >-----------------------
+[INFO] Building paketo-demo 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ paketo-demo ---
+[INFO] Deleting /home/focal/paketo-demo/target
+[INFO] 
+[INFO] --- spring-boot:2.7.7:build-info (build-info) @ paketo-demo ---
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ paketo-demo ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- compiler:3.10.1:compile (default-compile) @ paketo-demo ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 3 source files to /home/focal/paketo-demo/target/classes
+[INFO] 
+[INFO] --- resources:3.2.0:testResources (default-testResources) @ paketo-demo ---
+[INFO] Not copying test resources
+[INFO] 
+[INFO] --- compiler:3.10.1:testCompile (default-testCompile) @ paketo-demo ---
+[INFO] Not compiling test sources
+[INFO] 
+[INFO] --- surefire:2.22.2:test (default-test) @ paketo-demo ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- war:3.3.2:war (default-war) @ paketo-demo ---
+[INFO] Packaging webapp
+[INFO] Assembling webapp [paketo-demo] in [/home/focal/paketo-demo/target/paketo-demo-0.0.1-SNAPSHOT]
+[INFO] Processing war project
+[INFO] Building war: /home/focal/paketo-demo/target/paketo-demo-0.0.1-SNAPSHOT.war
+[INFO] 
+[INFO] --- spring-boot:2.7.7:repackage (repackage) @ paketo-demo ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] 
+[INFO] >>> spring-boot:2.7.7:build-image (build-image) > package @ paketo-demo >>>
+[INFO] 
+[INFO] --- spring-boot:2.7.7:build-info (build-info) @ paketo-demo ---
+[INFO] 
+[INFO] --- resources:3.2.0:resources (default-resources) @ paketo-demo ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Using 'UTF-8' encoding to copy filtered properties files.
+[INFO] Copying 1 resource
+[INFO] Copying 0 resource
+[INFO] 
+[INFO] --- compiler:3.10.1:compile (default-compile) @ paketo-demo ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 3 source files to /home/focal/paketo-demo/target/classes
+[INFO] 
+[INFO] --- resources:3.2.0:testResources (default-testResources) @ paketo-demo ---
+[INFO] Not copying test resources
+[INFO] 
+[INFO] --- compiler:3.10.1:testCompile (default-testCompile) @ paketo-demo ---
+[INFO] Not compiling test sources
+[INFO] 
+[INFO] --- surefire:2.22.2:test (default-test) @ paketo-demo ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- war:3.3.2:war (default-war) @ paketo-demo ---
+[INFO] Packaging webapp
+[INFO] Assembling webapp [paketo-demo] in [/home/focal/paketo-demo/target/paketo-demo-0.0.1-SNAPSHOT]
+[INFO] Processing war project
+[INFO] Building war: /home/focal/paketo-demo/target/paketo-demo-0.0.1-SNAPSHOT.war
+[INFO] 
+[INFO] --- spring-boot:2.7.7:repackage (repackage) @ paketo-demo ---
+[INFO] Replacing main artifact with repackaged archive
+[INFO] 
+[INFO] <<< spring-boot:2.7.7:build-image (build-image) < package @ paketo-demo <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:2.7.7:build-image (build-image) @ paketo-demo ---
+[INFO] Building image 'docker.io/library/paketo-demo:0.0.1-SNAPSHOT'
+[INFO] 
+[INFO]  > Pulling run image 'docker.io/paketobuildpacks/run:base-cnb' 6%
+[INFO]  > Pulling run image 'docker.io/paketobuildpacks/run:base-cnb' 27%
+[INFO]  > Pulling run image 'docker.io/paketobuildpacks/run:base-cnb' 49%
+[INFO]  > Pulling run image 'docker.io/paketobuildpacks/run:base-cnb' 55%
+[INFO]  > Pulling run image 'docker.io/paketobuildpacks/run:base-cnb' 100%
+[INFO]  > Pulled run image 'paketobuildpacks/run@sha256:1af9935d8987fd52b2266d288200c9482d1dd5529860bbf5bc2d248de1cb1a38'
+[INFO]  > Executing lifecycle version v0.16.3
+[INFO]  > Using build cache volume 'cache-paketo-demo.build'
+[INFO] 
+[INFO]  > Running creator
+[INFO]     [creator]     ===> ANALYZING
+[INFO]     [creator]     Image with name "docker.io/library/paketo-demo:0.0.1-SNAPSHOT" not found
+[INFO]     [creator]     Found image with identifier "f2e5000af0cb0db7d16a2939fc88c2aa522e91826c0e87ef2a4ec2825b213585"
+[INFO]     [creator]     ===> DETECTING
+[INFO]     [creator]     ERROR: failed to initialize detector: open /cnb/buildpacks/paketo-buildpacks_java/8.14.0/buildpack.toml: no such file or directory
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  26.437 s
+[INFO] Finished at: 2024-09-07T15:21:54Z
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:2.7.7:build-image (build-image) on project paketo-demo: Execution build-image of goal org.springframework.boot:spring-boot-maven-plugin:2.7.7:build-image failed: Builder lifecycle 'creator' failed with status code 1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/PluginExecutionException

@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.7</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>paketo-demo</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
-	<name>paketo-demo</name>
-	<description>Demo project for Spring Boot</description>
-	<properties>
-		<java.version>11</java.version>
-	<maven.test.skip>true</maven.test.skip>
-	<app.author>tianming2019</app.author>
-	</properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.18</version>
+        <relativePath /> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>com.example</groupId>
+    <artifactId>paketo-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
+    <name>paketo-demo</name>
+    <description>paketo Demo project for Spring Boot</description>
+    <properties>
+        <java.version>11</java.version>
+        <maven.test.skip>true</maven.test.skip>
+        <app.author>tianming2019</app.author>
+    </properties>
     <profiles>
         <profile>
             <id>paketo</id>
@@ -35,25 +36,32 @@
                                 </goals>
                                 <configuration>
                                     <docker>
-                                        <!-- <host>tcp://192.168.10.116:2375</host> -->
+                                        <host>tcp://localhost:2375</host>
                                     </docker>
                                     <image>
-			    		               <!-- build by Dockerfile in root dir -->
-					    <!--    <runImage>docker.myserver.com:5000/tianming2019/run:cn</runImage>-->
+                                        <!--
+                                        <builder>docker.myserver.com:5000/tianming2019/paketo-builder-jammy:cn-base</builder> -->
+                                        <!--
+                                        <runImage>docker.myserver.com:5000/tianming2019/paketo-run-jammy:cn-base</runImage> -->
+                                        <!-- build by Dockerfile in root dir -->
+                                        <!--
+                                        <runImage>docker.myserver.com:5000/tianming2019/run:cn</runImage>-->
                                         <bindings>
-					                       <!-- just jdk or someelse tar file to avoid download each time -->
+                                            <!-- just jdk or someelse tar file to avoid download each time -->
                                             <binding>proxy-volume:/platform/bindings/dependency-mapping:ro</binding>
                                         </bindings>
                                         <verboseLogging>true</verboseLogging>
                                         <buildpacks>
-						<buildpack>paketobuildpacks/java:8</buildpack>
-						<buildpack>paketobuildpacks/health-checker:1</buildpack>
-					    <!--				    <buildpack>docker://gcr.io/paketo-buildpacks/health-checker</buildpack> -->
-					    <!-- <buildpack>dmikusa/paketo-buildpacks-health-checker</buildpack> -->
+                                            <buildpack>paketobuildpacks/java:15.2.0</buildpack>
+                                            <buildpack>paketobuildpacks/health-checker:2.2.0</buildpack>
+                                            <!--
+                                            <buildpack>docker://gcr.io/paketo-buildpacks/health-checker</buildpack> -->
+                                            <!--
+                                            <buildpack>dmikusa/paketo-buildpacks-health-checker</buildpack> -->
                                         </buildpacks>
                                         <pullPolicy>IF_NOT_PRESENT</pullPolicy>
-					                   <!-- it seems that health-checker have a bugs about reuse cache when rebuild -->
-					<!-- <cleanCache>true</cleanCache> -->
+                                        <!-- it seems that health-checker have a bugs about reuse cache when rebuild -->
+                                        <!-- <cleanCache>true</cleanCache> -->
                                         <buildCache>
                                             <volume>
                                                 <name>cache-${project.artifactId}.build</name>
@@ -100,27 +108,27 @@
             </build>
         </profile>
     </profiles>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
